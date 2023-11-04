@@ -1,6 +1,5 @@
 from fastapi import FastAPI
 import psycopg2
-from uvicorn import require
 
 app=FastAPI()
 
@@ -9,8 +8,8 @@ conn = psycopg2.connect(
     user="fl0user",
     password="Mfmn8w1pRjlq",
     host="ep-broad-resonance-93484468.us-east-2.aws.neon.fl0.io",
-    port="5432",  # Por defecto, el puerto es 5432
-    sslmode=require
+    port="5432",
+    ssl_mode
 )
 
 @app.middleware("http")
