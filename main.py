@@ -9,7 +9,7 @@ conn = psycopg2.connect(
     password="Mfmn8w1pRjlq",
     host="ep-broad-resonance-93484468.us-east-2.aws.neon.fl0.io",
     port="5432",
-    ssl_mode="equire"
+    ssl_mode="require"
 )
 
 @app.middleware("http")
