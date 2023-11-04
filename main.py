@@ -4,10 +4,10 @@ import psycopg2
 app=FastAPI()
 
 conn = psycopg2.connect(
-    dbname="DSE-Backedn",
-    user="postgres",
-    password="gamesalada",
-    host="192.168.61.128",
+    dbname="DSE-Backend",
+    user="fl0user",
+    password="Mfmn8w1pRjlq",
+    host="ep-broad-resonance-93484468.us-east-2.aws.neon.fl0.io",
     port="5432"  # Por defecto, el puerto es 5432
 )
 
