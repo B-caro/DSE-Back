@@ -8,9 +8,9 @@ conn = psycopg2.connect(
     password="Mfmn8w1pRjlq",
     dbname="DSE-Backend",
     host="ep-broad-resonance-93484468.us-east-2.aws.neon.fl0.io",    
-    port="5432"  # Por defecto, el puerto es 5432
-)
-    
+    port="5432",
+    sslmode="require"
+)    
 
 @app.middleware("http")
 async def add_cors_header(request, call_next):
