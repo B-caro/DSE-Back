@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Body
+from fastapi import FastAPI, HTTPException, Body, Query
 from pydantic import BaseModel
 import psycopg2
 
@@ -13,6 +13,8 @@ conn = psycopg2.connect(
     sslmode="require"
 )
 
+cursorE = conn.cursor()
+
 class RepuestoCreate(BaseModel):
     Nombre: str
     Marca: str = None
@@ -25,6 +27,11 @@ class TiendaCreate(BaseModel):
     Nombre: str
     Contacto: str = None
     Ubicacion: str
+    
+class EnvioCreate(BaseModel):
+    Cliente: str
+    Estado: str
+    EnvioArticulosID: int
 
 @app.middleware("http")
 async def add_cors_header(request, call_next):
@@ -34,11 +41,10 @@ async def add_cors_header(request, call_next):
 
 @app.get("/apiRepuestos/obtenerRepuestos")
 async def root():
-    cursor = conn.cursor()
-    cursor.execute("SELECT * FROM Repuestos")
+    cursorE.execute("SELECT * FROM Repuestos")
     repuestos = []
 
-    for row in cursor.fetchall():
+    for row in cursorE.fetchall():
         repuesto = {
             "RepuestoID": row[0],
             "Nombre": row[1],
@@ -49,16 +55,15 @@ async def root():
             "TiendaID": row[6]
         }
         repuestos.append(repuesto)
-    cursor.close()
+    cursorE.close()
     return repuestos
 
 @app.get("/apiRepuestos/obtenerTiendas")
 async def root():
-    cursor = conn.cursor()
-    cursor.execute("SELECT * FROM Tiendas")
+    cursorE.execute("SELECT * FROM Tiendas")
     tiendas = []
 
-    for row in cursor.fetchall():
+    for row in cursorE.fetchall():
         tienda = {
             "TiendaID": row[0],
             "Nombre": row[1],
@@ -67,12 +72,34 @@ async def root():
         }
         tiendas.append(tienda)
 
-    cursor.close()
+    cursorE.close()
     return tiendas
+
+@app.get("/apiRepuestos/obtenerEnvios")
+async def obtener_envios():
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute("SELECT * FROM Envios")
+            envios = []
+
+            for row in cursor.fetchall():
+                envio = {
+                    "EnvioID": row[0],
+                    "Cliente": row[1],
+                    "Estado": row[2],
+                    "EnvioArticulosID": row[3]
+                }
+                envios.append(envio)
+
+        return envios
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        cursorE.close()
+
 
 @app.post("/apiRepuestos/agregarRepuesto")
 async def agregar_repuesto(repuesto: RepuestoCreate):
-    cursorE = conn.cursor()
     try:
         with conn.cursor() as cursor:
             cursor.execute(
@@ -91,7 +118,6 @@ async def agregar_repuesto(repuesto: RepuestoCreate):
 
 @app.post("/apiRepuestos/agregarTienda")
 async def agregar_tienda(tienda: TiendaCreate):
-    cursorE = conn.cursor()
     try:
         with conn.cursor() as cursor:
             cursor.execute(
@@ -103,6 +129,39 @@ async def agregar_tienda(tienda: TiendaCreate):
         cursorE.close()
         return {"TiendaID": tienda_id, **tienda.dict()}
     except Exception as e:
+        conn.rollback()@app.post("/apiEnvios/agregarEnvio")
+    finally:
+        cursorE.close()
+
+async def agregar_envio(envio: EnvioCreate):
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute(
+                "INSERT INTO Envios (Cliente, Estado, EnvioArticulosID) VALUES (%s, %s, %s) RETURNING EnvioID;",
+                (envio.Cliente, envio.Estado, envio.EnvioArticulosID)
+            )
+            envio_id = cursor.fetchone()[0]
+        conn.commit()
+        return {"EnvioID": envio_id, **envio.dict()}
+    except Exception as e:
+        conn.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        cursorE.close()
+        raise HTTPException(status_code=500, detail=str(e))
+        
+@app.post("/apiRepuestos/agregarEnvio")
+async def agregar_envio(envio: EnvioCreate):
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute(
+                "INSERT INTO Envios (Cliente, Estado, EnvioArticulosID) VALUES (%s, %s, %s) RETURNING EnvioID;",
+                (envio.Cliente, envio.Estado, envio.EnvioArticulosID)
+            )
+            envio_id = cursor.fetchone()[0]
+        conn.commit()
+        return {"EnvioID": envio_id, **envio.dict()}
+    except Exception as e:
         conn.rollback()
         raise HTTPException(status_code=500, detail=str(e))
     finally:
@@ -110,7 +169,6 @@ async def agregar_tienda(tienda: TiendaCreate):
 
 @app.put("/apiRepuestos/editarRepuesto/{repuesto_id}")
 async def editar_repuesto(repuesto_id: int, repuesto_update: RepuestoCreate):
-    cursorE = conn.cursor()
     try:
         with conn.cursor() as cursor:
             # Verificar si el repuesto existe
