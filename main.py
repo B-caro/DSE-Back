@@ -38,11 +38,11 @@ class EnvioCreate(BaseModel):
     EnvioArticulosID: int
     
 
-@app.middleware("http")
-async def add_cors_header(request, call_next):
-    response = await call_next(request)
-    response.headers["Access-Control-Allow-Origin"] = "*"
-    return response
+# @app.middleware("http")
+# async def add_cors_header(request, call_next):
+#     response = await call_next(request)
+#     response.headers["Access-Control-Allow-Origin"] = "*"
+#     return response
 
 @app.get("/apiRepuestos/obtenerRepuestos")
 async def root():
