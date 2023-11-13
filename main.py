@@ -21,6 +21,12 @@ class RepuestoCreate(BaseModel):
     Precio: float
     TiendaID: int
 
+class EnvioCreateWithArticulo(BaseModel):
+    Cliente: str
+    Estado: str
+    Repuesto: RepuestoCreate
+    PrecioUnitario: float
+    
 class TiendaCreate(BaseModel):
     Nombre: str
     Contacto: str = None
@@ -30,6 +36,7 @@ class EnvioCreate(BaseModel):
     Cliente: str
     Estado: str
     EnvioArticulosID: int
+    
 
 @app.middleware("http")
 async def add_cors_header(request, call_next):
@@ -94,6 +101,7 @@ async def obtener_envios():
                 cursorE.close()
         return envios
     except Exception as e:
+        cursorE.close()
         raise HTTPException(status_code=500, detail=str(e))
     finally:
         cursorE.close()
@@ -114,6 +122,7 @@ async def agregar_repuesto(repuesto: RepuestoCreate):
         return {"RepuestoID": repuesto_id, **repuesto.dict()}
     except Exception as e:
         conn.rollback()
+        cursorE.close()
         raise HTTPException(status_code=500, detail=str(e))
     finally:
         cursorE.close()
@@ -132,27 +141,10 @@ async def agregar_tienda(tienda: TiendaCreate):
         cursorE.close()
         return {"TiendaID": tienda_id, **tienda.dict()}
     except Exception as e:
+        cursorE.close()
         conn.rollback()@app.post("/apiEnvios/agregarEnvio")
     finally:
         cursorE.close()
-
-async def agregar_envio(envio: EnvioCreate):
-    try:
-        cursorE = conn.cursor()
-        with conn.cursor() as cursor:
-            cursor.execute(
-                "INSERT INTO Envios (Cliente, Estado, EnvioArticulosID) VALUES (%s, %s, %s) RETURNING EnvioID;",
-                (envio.Cliente, envio.Estado, envio.EnvioArticulosID)
-            )
-            envio_id = cursor.fetchone()[0]
-        conn.commit()
-        return {"EnvioID": envio_id, **envio.dict()}
-    except Exception as e:
-        conn.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
-    finally:
-        cursorE.close()
-        raise HTTPException(status_code=500, detail=str(e))
         
 @app.post("/apiRepuestos/agregarEnvio")
 async def agregar_envio(envio: EnvioCreate):
@@ -168,6 +160,7 @@ async def agregar_envio(envio: EnvioCreate):
         return {"EnvioID": envio_id, **envio.dict()}
     except Exception as e:
         conn.rollback()
+        cursorE.close()
         raise HTTPException(status_code=500, detail=str(e))
     finally:
         cursorE.close()
