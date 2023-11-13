@@ -98,10 +98,9 @@ async def obtener_envios():
                     "EnvioArticulosID": row[3]
                 }
                 envios.append(envio)
-                cursorE.close()
+
         return envios
     except Exception as e:
-        cursorE.close()
         raise HTTPException(status_code=500, detail=str(e))
     finally:
         cursorE.close()
@@ -118,11 +117,9 @@ async def agregar_repuesto(repuesto: RepuestoCreate):
             )
             repuesto_id = cursor.fetchone()[0]
         conn.commit()
-        cursorE.close()
         return {"RepuestoID": repuesto_id, **repuesto.dict()}
     except Exception as e:
         conn.rollback()
-        cursorE.close()
         raise HTTPException(status_code=500, detail=str(e))
     finally:
         cursorE.close()
@@ -138,10 +135,8 @@ async def agregar_tienda(tienda: TiendaCreate):
             )
             tienda_id = cursor.fetchone()[0]
         conn.commit()
-        cursorE.close()
         return {"TiendaID": tienda_id, **tienda.dict()}
     except Exception as e:
-        cursorE.close()
         conn.rollback()@app.post("/apiEnvios/agregarEnvio")
     finally:
         cursorE.close()
@@ -160,7 +155,6 @@ async def agregar_envio(envio: EnvioCreate):
         return {"EnvioID": envio_id, **envio.dict()}
     except Exception as e:
         conn.rollback()
-        cursorE.close()
         raise HTTPException(status_code=500, detail=str(e))
     finally:
         cursorE.close()
@@ -191,7 +185,6 @@ async def editar_repuesto(repuesto_id: int, repuesto_update: RepuestoCreate):
             # Ejecutar la actualización
             cursor.execute(update_query, update_values)
             conn.commit()
-            cursorE.close()
 
         # Obtener y devolver el repuesto actualizado
         return {"RepuestoID": repuesto_id, **repuesto_update.dict()}
