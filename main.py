@@ -13,8 +13,6 @@ conn = psycopg2.connect(
     sslmode="require"
 )
 
-cursorE = conn.cursor()
-
 class RepuestoCreate(BaseModel):
     Nombre: str
     Marca: str = None
@@ -41,6 +39,7 @@ async def add_cors_header(request, call_next):
 
 @app.get("/apiRepuestos/obtenerRepuestos")
 async def root():
+    cursorE = conn.cursor()
     cursorE.execute("SELECT * FROM Repuestos")
     repuestos = []
 
@@ -60,6 +59,7 @@ async def root():
 
 @app.get("/apiRepuestos/obtenerTiendas")
 async def root():
+    cursorE = conn.cursor()
     cursorE.execute("SELECT * FROM Tiendas")
     tiendas = []
 
@@ -78,6 +78,7 @@ async def root():
 @app.get("/apiRepuestos/obtenerEnvios")
 async def obtener_envios():
     try:
+        cursorE = conn.cursor()
         with conn.cursor() as cursor:
             cursor.execute("SELECT * FROM Envios")
             envios = []
@@ -101,6 +102,7 @@ async def obtener_envios():
 @app.post("/apiRepuestos/agregarRepuesto")
 async def agregar_repuesto(repuesto: RepuestoCreate):
     try:
+        cursorE = conn.cursor()
         with conn.cursor() as cursor:
             cursor.execute(
                 "INSERT INTO Repuestos (Nombre, Marca, Anio, Cantidad, Precio, TiendaID) VALUES (%s, %s, %s, %s, %s, %s) RETURNING RepuestoID;",
@@ -119,6 +121,7 @@ async def agregar_repuesto(repuesto: RepuestoCreate):
 @app.post("/apiRepuestos/agregarTienda")
 async def agregar_tienda(tienda: TiendaCreate):
     try:
+        cursorE = conn.cursor()
         with conn.cursor() as cursor:
             cursor.execute(
                 "INSERT INTO Tiendas (Nombre, Contacto, Ubicacion) VALUES (%s, %s, %s) RETURNING TiendaID;",
@@ -135,6 +138,7 @@ async def agregar_tienda(tienda: TiendaCreate):
 
 async def agregar_envio(envio: EnvioCreate):
     try:
+        cursorE = conn.cursor()
         with conn.cursor() as cursor:
             cursor.execute(
                 "INSERT INTO Envios (Cliente, Estado, EnvioArticulosID) VALUES (%s, %s, %s) RETURNING EnvioID;",
@@ -153,6 +157,7 @@ async def agregar_envio(envio: EnvioCreate):
 @app.post("/apiRepuestos/agregarEnvio")
 async def agregar_envio(envio: EnvioCreate):
     try:
+        cursorE = conn.cursor()
         with conn.cursor() as cursor:
             cursor.execute(
                 "INSERT INTO Envios (Cliente, Estado, EnvioArticulosID) VALUES (%s, %s, %s) RETURNING EnvioID;",
@@ -170,6 +175,7 @@ async def agregar_envio(envio: EnvioCreate):
 @app.put("/apiRepuestos/editarRepuesto/{repuesto_id}")
 async def editar_repuesto(repuesto_id: int, repuesto_update: RepuestoCreate):
     try:
+        cursorE = conn.cursor()
         with conn.cursor() as cursor:
             # Verificar si el repuesto existe
             cursor.execute("SELECT * FROM Repuestos WHERE RepuestoID = %s;", (repuesto_id,))
