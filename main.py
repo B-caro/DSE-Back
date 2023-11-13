@@ -91,7 +91,7 @@ async def obtener_envios():
                     "EnvioArticulosID": row[3]
                 }
                 envios.append(envio)
-
+                cursorE.close()
         return envios
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
