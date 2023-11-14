@@ -45,42 +45,51 @@ async def add_cors_header(request, call_next):
     return response
 
 @app.get("/apiRepuestos/obtenerRepuestos")
-async def root():
-    cursorE = conn.cursor()
-    cursorE.execute("SELECT * FROM Repuestos")
-    repuestos = []
+async def obtener_repuestos():
+    try:
+        cursorE = conn.cursor()
+        cursorE.execute("SELECT * FROM Repuestos")
+        repuestos = []
 
-    for row in cursorE.fetchall():
-        repuesto = {
-            "RepuestoID": row[0],
-            "Nombre": row[1],
-            "Marca": row[2],
-            "Anio": row[3],
-            "Cantidad": row[4],
-            "Precio": float(row[5]),  # Convierte el valor a decimal
-            "TiendaID": row[6]
-        }
-        repuestos.append(repuesto)
-    cursorE.close()
-    return repuestos
+        for row in cursorE.fetchall():
+            repuesto = {
+                "RepuestoID": row[0],
+                "Nombre": row[1],
+                "Marca": row[2],
+                "Anio": row[3],
+                "Cantidad": row[4],
+                "Precio": float(row[5]),  # Convierte el valor a decimal
+                "TiendaID": row[6]
+            }
+            repuestos.append(repuesto)
+
+        return repuestos
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        cursorE.close()
 
 @app.get("/apiRepuestos/obtenerTiendas")
-async def root():
-    cursorE = conn.cursor()
-    cursorE.execute("SELECT * FROM Tiendas")
-    tiendas = []
+async def obtener_tiendas():
+    try:
+        cursorE = conn.cursor()
+        cursorE.execute("SELECT * FROM Tiendas")
+        tiendas = []
 
-    for row in cursorE.fetchall():
-        tienda = {
-            "TiendaID": row[0],
-            "Nombre": row[1],
-            "Contacto": row[2],
-            "Ubicacion": row[3]
-        }
-        tiendas.append(tienda)
+        for row in cursorE.fetchall():
+            tienda = {
+                "TiendaID": row[0],
+                "Nombre": row[1],
+                "Contacto": row[2],
+                "Ubicacion": row[3]
+            }
+            tiendas.append(tienda)
 
-    cursorE.close()
-    return tiendas
+        return tiendas
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        cursorE.close()
 
 @app.get("/apiRepuestos/obtenerEnvios")
 async def obtener_envios():
