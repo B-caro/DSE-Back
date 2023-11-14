@@ -44,6 +44,28 @@ async def add_cors_header(request, call_next):
     response.headers["Access-Control-Allow-Origin"] = "*"
     return response
 
+@app.get("/apiSucursales/obtenerSucursales")
+async def obtener_sucursales():
+    try:
+        cursorE = conn.cursor()
+        cursorE.execute("SELECT * FROM sucursales")
+        sucursales = []
+
+        for row in cursorE.fetchall():
+            sucursal = {
+                "SucursalID": row[0],
+                "NombreSucursal": row[1],
+                "Ubicacion": row[2],
+                "NumeroContacto": row[3]
+            }
+            sucursales.append(sucursal)
+
+        return sucursales
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        cursorE.close()
+
 @app.get("/apiRepuestos/obtenerRepuestos")
 async def obtener_repuestos():
     try:
