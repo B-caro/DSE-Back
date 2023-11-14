@@ -65,6 +65,47 @@ async def obtener_sucursales():
         raise HTTPException(status_code=500, detail=str(e))
     finally:
         cursorE.close()
+        
+@app.get("/apiClientes/obtenerClientesConAutos")
+async def obtener_clientes_con_autos():
+    try:
+        cursorE = conn.cursor()
+        # Use a JOIN to fetch information about clients and their associated cars
+        cursorE.execute("""
+            SELECT c.*, a.marca, a.modelo, a.anio
+            FROM public.clientes c
+            LEFT JOIN public.infoautomovil ia ON c.clienteid = ia.clienteid
+            LEFT JOIN public.auto a ON ia.autoid = a.autoid
+        """)
+        clientes_con_autos = []
+
+        # Use a dictionary to group cars by client
+        cars_by_client = {}
+        for row in cursorE.fetchall():
+            cliente_id = row[0]
+            # If the client is not in the dictionary, add them
+            if cliente_id not in cars_by_client:
+                cars_by_client[cliente_id] = {
+                    "ClienteID": row[0],
+                    "Nombre": row[1],
+                    "TipoSeguro": row[2],
+                    "Autos": []
+                }
+            # Add car information to the list of cars for the client
+            cars_by_client[cliente_id]["Autos"].append({
+                "Marca": row[3],
+                "Modelo": row[4],
+                "Anio": row[5]
+            })
+
+        # Convert the dictionary values to a list for the final result
+        clientes_con_autos = list(cars_by_client.values())
+
+        return clientes_con_autos
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        cursorE.close()
 
 @app.get("/apiRepuestos/obtenerRepuestos")
 async def obtener_repuestos():
